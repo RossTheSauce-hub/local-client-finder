@@ -21,16 +21,13 @@ interface RateEntry {
 interface Stores {
   /** (location|category) -> results, 24h TTL */
   searchCache: Map<string, CacheEntry>;
-  /** searchId -> results, for the email gate */
-  byId: Map<string, CacheEntry>;
   /** ip -> daily search count */
   rate: Map<string, RateEntry>;
 }
 
 const g = globalThis as unknown as { __lcfStores?: Stores };
 const stores: Stores =
-  g.__lcfStores ??
-  (g.__lcfStores = { searchCache: new Map(), byId: new Map(), rate: new Map() });
+  g.__lcfStores ?? (g.__lcfStores = { searchCache: new Map(), rate: new Map() });
 
 function sweep(map: Map<string, CacheEntry>) {
   const now = Date.now();
@@ -49,19 +46,6 @@ export function getCachedSearch(key: string): SearchResults | null {
 
 export function setCachedSearch(key: string, value: SearchResults) {
   stores.searchCache.set(key, { value, expiresAt: Date.now() + DAY_MS });
-}
-
-export function storeResults(value: SearchResults): string {
-  sweep(stores.byId);
-  const id = crypto.randomUUID();
-  stores.byId.set(id, { value, expiresAt: Date.now() + DAY_MS });
-  return id;
-}
-
-export function getResultsById(id: string): SearchResults | null {
-  const entry = stores.byId.get(id);
-  if (!entry || entry.expiresAt < Date.now()) return null;
-  return entry.value;
 }
 
 const RATE_LIMIT = Number(process.env.RATE_LIMIT_PER_DAY ?? 3);

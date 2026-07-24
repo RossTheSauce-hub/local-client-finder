@@ -7,9 +7,9 @@ import {
   cacheKey,
   getCachedSearch,
   setCachedSearch,
-  storeResults,
   consumeRateLimit,
 } from "@/lib/store";
+import { seal } from "@/lib/seal";
 import type { SearchEvent } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -75,10 +75,9 @@ export async function POST(req: NextRequest) {
       try {
         if (cached) {
           send({ type: "stage", message: `Finding ${category.label.toLowerCase()}s near ${location}…` });
-          const searchId = storeResults(cached);
           send({
             type: "done",
-            searchId,
+            token: seal(cached),
             noVideoCount: cached.prospects.length,
             noWebsiteCount: cached.noWebsite.length,
             totalFound: cached.totalFound,
@@ -130,11 +129,10 @@ export async function POST(req: NextRequest) {
           places.length < 8,
         );
         setCachedSearch(key, results);
-        const searchId = storeResults(results);
 
         send({
           type: "done",
-          searchId,
+          token: seal(results),
           noVideoCount: results.prospects.length,
           noWebsiteCount: results.noWebsite.length,
           totalFound: results.totalFound,

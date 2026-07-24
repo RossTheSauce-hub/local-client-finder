@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { upsertGhlContact } from "@/lib/ghl";
-import { getResultsById } from "@/lib/store";
+import { open } from "@/lib/seal";
+import type { SearchResults } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +11,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 export async function POST(req: NextRequest) {
   let body: {
     email?: string;
-    searchId?: string;
+    token?: string;
     location?: string;
     category?: string;
   };
@@ -41,12 +42,12 @@ export async function POST(req: NextRequest) {
 
   const courseUrl = process.env.COURSE_URL ?? "#";
 
-  if (!body.searchId) {
+  if (!body.token) {
     // Fallback path (search failed earlier): email captured, no results to show.
     return Response.json({ ok: true, results: null, courseUrl });
   }
 
-  const results = getResultsById(body.searchId);
+  const results = open<SearchResults>(body.token);
   if (!results) {
     return Response.json(
       {

@@ -10,7 +10,8 @@ for a freelance videographer. Email-gated; contacts land in GoHighLevel.
    then fetches each homepage concurrently (5s per site, 20s overall) and scans the
    HTML for video signals (`<video>`, YouTube/Vimeo/Wistia/Loom embeds, showreel links).
    Results are scored (no video + good rating = warmest), cached in memory for 24h
-   per (location, category), and held server-side behind a `searchId`.
+   per (location, category), and returned to the client as an AES-encrypted token
+   (stateless, so it works across serverless instances).
 2. The client shows real progress, then an email gate with a teaser count.
 3. `/api/unlock`: upserts the contact into GoHighLevel (tagged, e.g.
    `lead-magnet-client-finder`) and returns the full results + course URL.

@@ -33,7 +33,8 @@ export type SearchEvent =
   | { type: "progress"; checked: number; total: number }
   | {
       type: "done";
-      searchId: string;
+      /** Sealed (encrypted) results token; returned to /api/unlock with the email. */
+      token: string;
       noVideoCount: number;
       noWebsiteCount: number;
       totalFound: number;

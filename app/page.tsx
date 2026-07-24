@@ -8,7 +8,8 @@ import { EmailGate } from "@/components/EmailGate";
 import { Results } from "@/components/Results";
 
 export interface Teaser {
-  searchId: string | null;
+  /** Sealed results token from the search; null on the email-only fallback path. */
+  token: string | null;
   noVideoCount: number;
   noWebsiteCount: number;
   totalFound: number;
@@ -72,7 +73,7 @@ export default function Home() {
           setPhase({
             name: "gate",
             teaser: {
-              searchId: event.searchId,
+              token: event.token,
               noVideoCount: event.noVideoCount,
               noWebsiteCount: event.noWebsiteCount,
               totalFound: event.totalFound,
@@ -86,7 +87,7 @@ export default function Home() {
             setPhase({
               name: "gate",
               teaser: {
-                searchId: null,
+                token: null,
                 noVideoCount: 0,
                 noWebsiteCount: 0,
                 totalFound: 0,
@@ -127,7 +128,7 @@ export default function Home() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email,
-            searchId: teaser.searchId,
+            token: teaser.token,
             location: lastSearch?.location,
             category: lastSearch?.category,
           }),
