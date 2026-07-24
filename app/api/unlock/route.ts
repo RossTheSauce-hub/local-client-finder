@@ -11,6 +11,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 export async function POST(req: NextRequest) {
   let body: {
     email?: string;
+    firstName?: string;
     token?: string;
     location?: string;
     category?: string;
@@ -29,9 +30,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const firstName = (body.firstName ?? "").trim().slice(0, 60);
+
   // Capture the lead first — even if results have expired, the email lands in GHL.
   const ghl = await upsertGhlContact({
     email,
+    firstName,
     location: body.location,
     category: body.category,
   });

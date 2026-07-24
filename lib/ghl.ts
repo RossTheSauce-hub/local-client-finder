@@ -2,12 +2,14 @@
 
 interface UpsertParams {
   email: string;
+  firstName?: string;
   location?: string;
   category?: string;
 }
 
 export async function upsertGhlContact({
   email,
+  firstName,
   location,
   category,
 }: UpsertParams): Promise<{ ok: boolean; error?: string }> {
@@ -32,6 +34,7 @@ export async function upsertGhlContact({
       body: JSON.stringify({
         locationId,
         email,
+        ...(firstName ? { firstName } : {}),
         tags: [tag],
         source: "Local Client Finder",
         customFields: [],

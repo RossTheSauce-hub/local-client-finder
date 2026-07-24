@@ -121,13 +121,14 @@ export default function Home() {
   }, []);
 
   const unlock = useCallback(
-    async (email: string, teaser: Teaser): Promise<string | null> => {
+    async (email: string, firstName: string, teaser: Teaser): Promise<string | null> => {
       try {
         const res = await fetch("/api/unlock", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email,
+            firstName,
             token: teaser.token,
             location: lastSearch?.location,
             category: lastSearch?.category,

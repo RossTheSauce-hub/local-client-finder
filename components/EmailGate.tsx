@@ -14,8 +14,9 @@ export function EmailGate({
   onUnlock,
 }: {
   teaser: Teaser;
-  onUnlock: (email: string, teaser: Teaser) => Promise<string | null>;
+  onUnlock: (email: string, firstName: string, teaser: Teaser) => Promise<string | null>;
 }) {
+  const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,13 +90,23 @@ export function EmailGate({
             if (busy) return;
             setBusy(true);
             setError(null);
-            const err = await onUnlock(email.trim(), teaser);
+            const err = await onUnlock(email.trim(), firstName.trim(), teaser);
             if (err) {
               setError(err);
               setBusy(false);
             }
           }}
         >
+          <input
+            className="field"
+            type="text"
+            placeholder="First name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            autoComplete="given-name"
+            maxLength={60}
+            required
+          />
           <input
             className="field"
             type="email"
