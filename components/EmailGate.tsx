@@ -118,8 +118,8 @@ export function EmailGate({
                 : "Unlock my list — free"}
           </button>
           <p className="text-center text-[12px] leading-relaxed text-faint">
-            We&apos;ll email you the occasional no-fluff tip on landing paying video
-            clients. Unsubscribe anytime.
+            I&apos;ll send you emails every now and then about making videos for a
+            living, but you can unsubscribe anytime.
           </p>
         </form>
       </div>
