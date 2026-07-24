@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# The Local Client Finder
 
-## Getting Started
+Free lead-magnet tool for The Paid Creative. Enter a UK postcode/town and a business
+type → get ~10 local businesses with **no video on their website** — warm prospects
+for a freelance videographer. Email-gated; contacts land in GoHighLevel.
 
-First, run the development server:
+## How it works
+
+1. `/api/search` (streamed NDJSON): Google Places text search (~20–30 businesses),
+   then fetches each homepage concurrently (5s per site, 20s overall) and scans the
+   HTML for video signals (`<video>`, YouTube/Vimeo/Wistia/Loom embeds, showreel links).
+   Results are scored (no video + good rating = warmest), cached in memory for 24h
+   per (location, category), and held server-side behind a `searchId`.
+2. The client shows real progress, then an email gate with a teaser count.
+3. `/api/unlock`: upserts the contact into GoHighLevel (tagged, e.g.
+   `lead-magnet-client-finder`) and returns the full results + course URL.
+4. Results page: prospect cards with suggested openers, a "no website at all" bonus
+   list (max 3), CSV download, and the $27 course CTA.
+
+Rate limit: 3 fresh (non-cached) searches per IP per day (in-memory).
+
+## Setup
 
 ```bash
+cp .env.example .env.local   # then fill in the values
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Env vars: `GOOGLE_PLACES_API_KEY`, `GHL_PRIVATE_TOKEN`, `GHL_LOCATION_ID`,
+`GHL_TAG`, `COURSE_URL`. See `.env.example`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Google: enable **Places API (New)** for the key. Each search costs one Text Search
+  call (two when the radius widens); the 24h cache keeps repeat searches free.
+- GHL: create a **Private Integration** token with contact write scope; a workflow
+  in GHL should trigger off the tag to deliver the nurture sequence.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploy (Vercel)
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Push to a repo, import into Vercel, set the env vars, deploy. The search route sets
+`maxDuration = 60`. Caches/rate limits are per warm lambda — fine for V1; swap
+`lib/store.ts` for Vercel KV if volume grows.
