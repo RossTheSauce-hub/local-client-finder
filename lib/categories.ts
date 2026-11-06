@@ -38,8 +38,8 @@ export const CATEGORIES: Category[] = [
   },
   {
     slug: "estate-agent",
-    label: "Estate Agent",
-    query: "independent estate agent",
+    label: "Estate Agent / Realtor",
+    query: "estate agent real estate agent realtor",
     opener:
       "I noticed there's no video on your site — and listings with video get far more enquiries. I'm a local filmmaker and I shoot property and brand films for agents like you.",
   },

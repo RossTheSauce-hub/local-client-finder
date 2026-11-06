@@ -1,5 +1,7 @@
 /** Google Places API (New) text search, server-side only. */
 
+import type { Country } from "./countries";
+
 export interface PlaceResult {
   id: string;
   name: string;
@@ -30,7 +32,11 @@ const FIELD_MASK = [
   "places.userRatingCount",
 ].join(",");
 
-async function textSearch(textQuery: string, apiKey: string): Promise<PlaceResult[]> {
+async function textSearch(
+  textQuery: string,
+  regionCode: string,
+  apiKey: string,
+): Promise<PlaceResult[]> {
   const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
     method: "POST",
     headers: {
@@ -38,7 +44,7 @@ async function textSearch(textQuery: string, apiKey: string): Promise<PlaceResul
       "X-Goog-Api-Key": apiKey,
       "X-Goog-FieldMask": FIELD_MASK,
     },
-    body: JSON.stringify({ textQuery, maxResultCount: 20, regionCode: "GB" }),
+    body: JSON.stringify({ textQuery, maxResultCount: 20, regionCode }),
     signal: AbortSignal.timeout(10_000),
   });
 
@@ -84,12 +90,13 @@ export function isRealWebsite(url: string | null): boolean {
 }
 
 /**
- * Search for businesses near a UK location. If the first pass returns too few
- * results, widens once with a broader query. Deduped by place id.
+ * Search for businesses near a location in the given country. If the first pass
+ * returns too few results, widens once with a broader query. Deduped by place id.
  */
 export async function searchBusinesses(
   categoryQuery: string,
   location: string,
+  country: Country,
 ): Promise<{ places: PlaceResult[]; widened: boolean }> {
   // Dev-only mock so the full pipeline (incl. real video checks) can be
   // exercised without a Places key. Never active in production builds.
@@ -100,12 +107,17 @@ export async function searchBusinesses(
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
   if (!apiKey) throw new Error("GOOGLE_PLACES_API_KEY is not set");
 
-  const first = await textSearch(`${categoryQuery} in ${location}, UK`, apiKey);
+  const first = await textSearch(
+    `${categoryQuery} in ${location}, ${country.name}`,
+    country.regionCode,
+    apiKey,
+  );
   if (first.length >= 12) return { places: first, widened: false };
 
   // Widen once: "near" nudges Places to expand the search area.
   const second = await textSearch(
-    `${categoryQuery} near ${location}, United Kingdom`,
+    `${categoryQuery} near ${location}, ${country.name}`,
+    country.regionCode,
     apiKey,
   ).catch(() => [] as PlaceResult[]);
 

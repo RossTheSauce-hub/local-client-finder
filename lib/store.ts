@@ -34,9 +34,13 @@ function sweep(map: Map<string, CacheEntry>) {
   for (const [k, v] of map) if (v.expiresAt < now) map.delete(k);
 }
 
-export function cacheKey(location: string, category: string): string {
+export function cacheKey(
+  location: string,
+  category: string,
+  country: string,
+): string {
   const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
-  return `${norm(location)}|${norm(category)}`;
+  return `${norm(country)}|${norm(location)}|${norm(category)}`;
 }
 
 export function getCachedSearch(key: string): SearchResults | null {

@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { CATEGORIES } from "@/lib/categories";
+import { COUNTRIES, DEFAULT_COUNTRY, getCountry } from "@/lib/countries";
 
 export interface SearchInput {
   location: string;
   category: string;
   otherText: string;
+  country: string;
 }
 
 export function SearchForm({
@@ -19,6 +21,10 @@ export function SearchForm({
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0].slug);
   const [otherText, setOtherText] = useState("");
+  const [country, setCountry] = useState(DEFAULT_COUNTRY.code);
+
+  const placeholder =
+    (getCountry(country) ?? DEFAULT_COUNTRY).placeholder;
 
   const canSubmit =
     location.trim().length >= 2 &&
@@ -73,9 +79,27 @@ export function SearchForm({
         style={{ animationDelay: "0.35s" }}
         onSubmit={(e) => {
           e.preventDefault();
-          if (canSubmit) onSubmit({ location: location.trim(), category, otherText: otherText.trim() });
+          if (canSubmit)
+            onSubmit({ location: location.trim(), category, otherText: otherText.trim(), country });
         }}
       >
+        <label className="block">
+          <span className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-muted">
+            Country
+          </span>
+          <select
+            className="field"
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+          >
+            {COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <label className="block">
           <span className="mb-1.5 block font-mono text-[10px] uppercase tracking-[0.25em] text-muted">
             Your patch
@@ -83,7 +107,7 @@ export function SearchForm({
           <input
             className="field"
             type="text"
-            placeholder="Postcode or town — e.g. BS1 or Sheffield"
+            placeholder={placeholder}
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             autoComplete="postal-code"

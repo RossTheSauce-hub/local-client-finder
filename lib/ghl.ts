@@ -5,6 +5,7 @@ interface UpsertParams {
   firstName?: string;
   location?: string;
   category?: string;
+  country?: string;
 }
 
 export async function upsertGhlContact({
@@ -12,6 +13,7 @@ export async function upsertGhlContact({
   firstName,
   location,
   category,
+  country,
 }: UpsertParams): Promise<{ ok: boolean; error?: string }> {
   const token = process.env.GHL_PRIVATE_TOKEN;
   const locationId = process.env.GHL_LOCATION_ID;
@@ -38,13 +40,14 @@ export async function upsertGhlContact({
         tags: [tag],
         source: "Local Client Finder",
         customFields: [],
-        ...(location || category
+        ...(location || category || country
           ? {
-              // Searched location/category ride along as contact attribution
+              // Searched country/location/category ride along as contact attribution
               attributionSource: {
                 campaign: "local-client-finder",
                 medium: category ?? "",
                 utmContent: location ?? "",
+                utmKeyword: country ?? "",
               },
             }
           : {}),

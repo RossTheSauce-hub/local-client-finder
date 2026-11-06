@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { getCategory } from "@/lib/categories";
+import { getCountry, DEFAULT_COUNTRY } from "@/lib/countries";
 import { searchBusinesses, isRealWebsite } from "@/lib/places";
 import { checkSitesForVideo } from "@/lib/videoCheck";
 import { buildResults } from "@/lib/score";
@@ -27,7 +28,12 @@ function clientIp(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest) {
-  let body: { location?: string; category?: string; otherText?: string };
+  let body: {
+    location?: string;
+    category?: string;
+    otherText?: string;
+    country?: string;
+  };
   try {
     body = await req.json();
   } catch {
@@ -38,6 +44,7 @@ export async function POST(req: NextRequest) {
   const categorySlug = (body.category ?? "").trim();
   const otherText = (body.otherText ?? "").trim().slice(0, 60);
   const category = getCategory(categorySlug);
+  const country = getCountry((body.country ?? "").trim()) ?? DEFAULT_COUNTRY;
 
   if (location.length < 2 || !category) {
     return Response.json(
@@ -53,7 +60,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const key = cacheKey(location, category.slug === "other" ? otherText : category.slug);
+  const key = cacheKey(
+    location,
+    category.slug === "other" ? otherText : category.slug,
+    country.code,
+  );
   const cached = getCachedSearch(key);
 
   if (!cached && !consumeRateLimit(clientIp(req))) {
@@ -89,7 +100,7 @@ export async function POST(req: NextRequest) {
         }
 
         send({ type: "stage", message: `Searching for ${category.label.toLowerCase()}s near ${location}…` });
-        const { places, widened } = await searchBusinesses(searchTerm, location);
+        const { places, widened } = await searchBusinesses(searchTerm, location, country);
 
         if (places.length === 0) {
           send({

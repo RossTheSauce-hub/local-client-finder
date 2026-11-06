@@ -132,6 +132,7 @@ export default function Home() {
             token: teaser.token,
             location: lastSearch?.location,
             category: lastSearch?.category,
+            country: lastSearch?.country,
           }),
         });
         const data = await res.json();

@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
     token?: string;
     location?: string;
     category?: string;
+    country?: string;
   };
   try {
     body = await req.json();
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest) {
     firstName,
     location: body.location,
     category: body.category,
+    country: body.country,
   });
   if (!ghl.ok) {
     // Don't block the user on a CRM hiccup; log it and carry on.
